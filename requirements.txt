@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+
+# PostgreSQL
+sqlalchemy
+psycopg2-binary
+
+# MongoDB (async + ODM)
+motor
+beanie
+
+# Configuração e validação
+python-dotenv
+pydantic
+pydantic-settings
