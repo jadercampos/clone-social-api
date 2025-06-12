@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
+from app.core.fastapi_users_instance import current_active_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.postgres import get_db
+from app.models.postgres.user import User
 from app.schemas.postgres.influencer import (
     InfluencerCreate,
     InfluencerUpdate,
@@ -28,11 +30,11 @@ async def read(influencer_id: str, db: AsyncSession = Depends(get_db)):
     return result
 
 @router.get("/", response_model=list[InfluencerRead])
-async def read_all(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def read_all(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db), user: User = Depends(current_active_user)):
     return await list_influencers(db, skip, limit)
 
 @router.put("/{influencer_id}", response_model=InfluencerRead)
-async def update(influencer_id: str, data: InfluencerUpdate, db: AsyncSession = Depends(get_db)):
+async def update(influencer_id: str, data: InfluencerUpdate, db: AsyncSession = Depends(get_db), user: User = Depends(current_active_user)):
     updated = await update_influencer(db, influencer_id, data)
     if not updated:
         raise HTTPException(status_code=404, detail="Influencer not found")
