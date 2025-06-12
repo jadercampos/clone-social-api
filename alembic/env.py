@@ -3,7 +3,9 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 from app.models.postgres.base import BaseModelORM
+from app.models.postgres import *
 from app.models.postgres.influencer import Influencer
+from app.models.postgres import user 
 
 
 # Alembic config object

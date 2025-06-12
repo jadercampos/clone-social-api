@@ -1,34 +1,47 @@
-from sqlalchemy.orm import Session
+from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.models.postgres.influencer import Influencer
 from app.schemas.postgres.influencer import InfluencerCreate, InfluencerUpdate
+from typing import List, Optional
 
-def create_influencer(db: Session, data: InfluencerCreate) -> Influencer:
+
+async def create_influencer(db: AsyncSession, data: InfluencerCreate) -> Influencer:
     obj = Influencer(**data.dict())
     db.add(obj)
-    db.commit()
-    db.refresh(obj)
+    await db.commit()
+    await db.refresh(obj)
     return obj
 
-def update_influencer(db: Session, influencer_id: str, data: InfluencerUpdate):
-    obj = db.query(Influencer).filter(Influencer.id == influencer_id).first()
+
+async def update_influencer(
+    db: AsyncSession, influencer_id: UUID, data: InfluencerUpdate
+) -> Optional[Influencer]:
+    result = await db.execute(select(Influencer).filter(Influencer.id == influencer_id))
+    obj = result.scalar_one_or_none()
     if not obj:
         return None
     for key, value in data.dict(exclude_unset=True).items():
         setattr(obj, key, value)
-    db.commit()
-    db.refresh(obj)
+    await db.commit()
+    await db.refresh(obj)
     return obj
 
-def get_influencer_by_id(db: Session, influencer_id: str) -> Influencer:
-    return db.query(Influencer).filter(Influencer.id == influencer_id).first()
 
-def get_all_influencers(db: Session, skip=0, limit=100):
-    return db.query(Influencer).offset(skip).limit(limit).all()
+async def get_influencer_by_id(db: AsyncSession, influencer_id: UUID) -> Optional[Influencer]:
+    result = await db.execute(select(Influencer).filter(Influencer.id == influencer_id))
+    return result.scalar_one_or_none()
 
-def delete_influencer(db: Session, influencer_id: str):
-    obj = get_influencer_by_id(db, influencer_id)
+
+async def get_all_influencers(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Influencer]:
+    result = await db.execute(select(Influencer).offset(skip).limit(limit))
+    return result.scalars().all()
+
+
+async def delete_influencer(db: AsyncSession, influencer_id: UUID) -> bool:
+    obj = await get_influencer_by_id(db, influencer_id)
     if obj:
-        db.delete(obj)
-        db.commit()
+        await db.delete(obj)
+        await db.commit()
         return True
     return False

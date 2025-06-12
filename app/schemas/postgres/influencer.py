@@ -1,10 +1,10 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
 class InfluencerBase(BaseModel):
     name: str
-    username: str
     email: Optional[EmailStr] = None
     avatar_url: Optional[str] = None
 
@@ -15,7 +15,7 @@ class InfluencerUpdate(InfluencerBase):
     pass
 
 class InfluencerRead(InfluencerBase):
-    id: str
+    id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
 

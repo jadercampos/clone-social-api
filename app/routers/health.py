@@ -1,7 +1,9 @@
-from fastapi import Depends, APIRouter
-from sqlalchemy.orm import Session
-from app.db.dependencies import get_db
+# app/routers/health.py
+from fastapi import APIRouter, Depends
+from typing import Annotated
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from app.db.postgres import get_db
 from app.db import mongo
 import logging
 
@@ -14,12 +16,14 @@ async def health_check():
     return {"status": "API is alive!!!"}
 
 @router.get("/postgres")
-def db_healthcheck(db: Session = Depends(get_db)):
+async def db_healthcheck(
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
     try:
-        db.execute(text("SELECT 1"))
+        await db.execute(text("SELECT 1"))
         return {"status": "ok"}
     except Exception as e:
-        logger.error("Error checking postgres")
+        logger.error("Erro ao verificar o banco Postgres", exc_info=e)
         return {"status": "error", "detail": str(e)}
 
 @router.get("/mongo")
@@ -31,7 +35,7 @@ async def check_mongo():
         await mongo.mongo_client.admin.command("ping")
         return {"status": "ok"}
     except Exception as e:
-        logger.error("Error checking mongo")
+        logger.error("Erro ao verificar o Mongo", exc_info=e)
         return {"status": "error", "detail": str(e)}
 
 @router.get("/logger")
@@ -41,6 +45,4 @@ async def check_logger():
     logger.warning("Isso é um aviso.")
     logger.error("Isso é um erro.")
     logger.critical("Isso é crítico!")
-    # logger.exception("Isso é uma exceção.")
-    
     return {"status": "ok"}

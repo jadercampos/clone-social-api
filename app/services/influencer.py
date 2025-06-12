@@ -1,22 +1,24 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.influencer import (
     create_influencer,
     get_influencer_by_id,
     get_all_influencers,
     delete_influencer,
-    update_influencer
+    update_influencer,
 )
+from app.schemas.postgres.influencer import InfluencerCreate, InfluencerUpdate
 
-def create_new_influencer(db, data):
-    return create_influencer(db, data)
+async def create_new_influencer(db: AsyncSession, data: InfluencerCreate):
+    return await create_influencer(db, data)
 
-def get_influencer(db, influencer_id):
-    return get_influencer_by_id(db, influencer_id)
+async def get_influencer(db: AsyncSession, influencer_id: str):
+    return await get_influencer_by_id(db, influencer_id)
 
-def list_influencers(db, skip, limit):
-    return get_all_influencers(db, skip, limit)
+async def list_influencers(db: AsyncSession, skip: int, limit: int):
+    return await get_all_influencers(db, skip, limit)
 
-def remove_influencer(db, influencer_id):
-    return delete_influencer(db, influencer_id)
+async def remove_influencer(db: AsyncSession, influencer_id: str):
+    return await delete_influencer(db, influencer_id)
 
-def update_influencer(db, influencer_id: str, data):
-    return update_influencer(db, influencer_id, data)
+async def update_influencer(db: AsyncSession, influencer_id: str, data: InfluencerUpdate):
+    return await update_influencer(db, influencer_id, data)
